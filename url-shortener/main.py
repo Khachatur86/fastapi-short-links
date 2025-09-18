@@ -1,6 +1,3 @@
-def main():
-    print("Hello from fastapi-short-links!")
+from fastapi import FastAPI
 
-
-if __name__ == "__main__":
-    main()
+app = FastAPI()
