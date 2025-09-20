@@ -1,10 +1,11 @@
 from pydantic import (
     BaseModel,
+    AnyHttpUrl,
 )
 
 
 class ShortUrlBase(BaseModel):
-    target_url: str
+    target_url: AnyHttpUrl
     slug: str
 
 
