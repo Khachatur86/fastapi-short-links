@@ -1,31 +1,16 @@
-from typing import Annotated
 from fastapi import (
     FastAPI,
     Request,
-    status,
-    HTTPException,
-    Depends,
 )
-from schemas.short_url import ShortUrl
 
-SHORT_URLS = [
-    ShortUrl(
-        target_url="https://example.com",
-        slug="example",
-    ),
-    ShortUrl(
-        target_url="https://google.com",
-        slug="search",
-    ),
-]
-
-from fastapi.responses import (
-    RedirectResponse,
-)
+from api import router as api_router
+from api.redirect_views import router as redirect_router
 
 app = FastAPI(
     title="URL Shortener",
 )
+app.include_router(redirect_router)
+app.include_router(api_router)
 
 
 @app.get("/")
@@ -41,49 +26,3 @@ def read_root(
         "message": f"Hello {name}",
         "docs": str(docs_url),
     }
-
-
-@app.get("/short-urls/", response_model=list[ShortUrl])
-def get_short_urls():
-    return SHORT_URLS
-
-
-def prefetch_short_url(
-    slug: str,
-) -> ShortUrl:
-    url: ShortUrl | None = next(
-        (url for url in SHORT_URLS if url.slug == slug),
-        None,
-    )
-    if url:
-        return url
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail=f"URL {slug!r} not found",
-    )
-
-
-@app.get("/r/{slug}")
-@app.get("/r/{slug}/")
-def redirect_short_url(
-    url: Annotated[
-        ShortUrl,
-        Depends(prefetch_short_url),
-    ],
-):
-    return RedirectResponse(
-        url=url.target_url,
-    )
-
-
-@app.get(
-    "/short-urls/{slug}",
-    response_model=ShortUrl,
-)
-def read_short_urls_details(
-    url: Annotated[
-        ShortUrl,
-        Depends(prefetch_short_url),
-    ],
-):
-    return url
