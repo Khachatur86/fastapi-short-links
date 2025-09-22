@@ -5,7 +5,11 @@ from starlette import status
 
 from api.api_v1.short_urls.crud import storage
 from api.api_v1.short_urls.dependencies import prefetch_short_url
-from schemas.short_url import ShortUrl, ShortUrlUpdate
+from schemas.short_url import (
+    ShortUrl,
+    ShortUrlUpdate,
+    ShortUrlRead,
+)
 
 router = APIRouter(
     prefix="/{slug}",
@@ -32,7 +36,7 @@ ShortUrlBySlug = Annotated[
 
 @router.get(
     "/",
-    response_model=ShortUrl,
+    response_model=ShortUrlRead,
 )
 def read_short_urls_details(
     url: ShortUrlBySlug,
@@ -42,12 +46,12 @@ def read_short_urls_details(
 
 @router.put(
     "/",
-    response_model=ShortUrl,
+    response_model=ShortUrlRead,
 )
 def update_short_urls_details(
     url: ShortUrlBySlug,
     short_url_in: ShortUrlUpdate,
-) -> ShortUrl:
+) -> ShortUrlRead:
     return storage.update(
         short_url=url,
         short_url_in=short_url_in,
@@ -56,12 +60,12 @@ def update_short_urls_details(
 
 @router.patch(
     "/",
-    response_model=ShortUrl,
+    response_model=ShortUrlRead,
 )
 def update_short_urls_details_partial(
     url: ShortUrlBySlug,
     short_url_in: ShortUrlUpdate,
-) -> ShortUrl:
+) -> ShortUrlRead:
     return storage.update_partial(
         short_url=url,
         short_url_in=short_url_in,
