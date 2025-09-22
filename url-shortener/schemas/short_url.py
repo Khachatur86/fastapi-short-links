@@ -33,7 +33,7 @@ class ShortUrlUpdate(ShortUrlBase):
 class ShortUrlPartialUpdate(ShortUrlBase):
     """Модель частичного обновления короткой ссылки"""
 
-    target_url: str | None = None
+    target_url: AnyHttpUrl | None = None
     description: DescriptionString | None = None
 
 
