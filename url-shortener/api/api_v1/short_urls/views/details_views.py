@@ -44,11 +44,25 @@ def read_short_urls_details(
     "/",
     response_model=ShortUrl,
 )
-def update(
+def update_short_urls_details(
     url: ShortUrlBySlug,
     short_url_in: ShortUrlUpdate,
-):
+) -> ShortUrl:
     return storage.update(
+        short_url=url,
+        short_url_in=short_url_in,
+    )
+
+
+@router.patch(
+    "/",
+    response_model=ShortUrl,
+)
+def update_short_urls_details_partial(
+    url: ShortUrlBySlug,
+    short_url_in: ShortUrlUpdate,
+) -> ShortUrl:
+    return storage.update_partial(
         short_url=url,
         short_url_in=short_url_in,
     )
