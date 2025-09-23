@@ -2,6 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 from starlette import status
+from starlette.background import BackgroundTasks
 
 from api.api_v1.short_urls.crud import storage
 from api.api_v1.short_urls.dependencies import prefetch_short_url
@@ -48,10 +49,12 @@ def read_short_urls_details(
     "/",
     response_model=ShortUrlRead,
 )
-def update_short_urls_details(
+def update_short_url_details(
     url: ShortUrlBySlug,
     short_url_in: ShortUrlUpdate,
+    background_tasks: BackgroundTasks,
 ) -> ShortUrlRead:
+    background_tasks.add_task(storage.save_state)
     return storage.update(
         short_url=url,
         short_url_in=short_url_in,
@@ -65,7 +68,9 @@ def update_short_urls_details(
 def update_short_urls_details_partial(
     url: ShortUrlBySlug,
     short_url_in: ShortUrlUpdate,
+    background_tasks: BackgroundTasks,
 ) -> ShortUrlRead:
+    background_tasks.add_task(storage.save_state)
     return storage.update_partial(
         short_url=url,
         short_url_in=short_url_in,
@@ -78,5 +83,7 @@ def update_short_urls_details_partial(
 )
 def delete_short_url(
     url: ShortUrlBySlug,
+    background_tasks: BackgroundTasks,
 ) -> None:
+    background_tasks.add_task(storage.save_state)
     storage.delete(short_url=url)

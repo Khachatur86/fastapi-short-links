@@ -1,6 +1,7 @@
 from fastapi import (
     APIRouter,
     status,
+    BackgroundTasks,
 )
 
 from schemas.short_url import (
@@ -27,5 +28,8 @@ def read_short_urls():
 )
 def create_short_url(
     short_url_create: ShortUrlCreate,
+    background_tasks: BackgroundTasks,
 ):
-    return storage.create(short_url_create)
+    short_url = storage.create(short_url_create)
+    background_tasks.add_task(storage.save_state)
+    return short_url
