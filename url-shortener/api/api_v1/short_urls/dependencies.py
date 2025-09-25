@@ -1,6 +1,7 @@
 import logging
 from typing import Annotated
 
+from fastapi.params import Depends
 from starlette import status
 
 from fastapi import (
@@ -8,6 +9,10 @@ from fastapi import (
     BackgroundTasks,
     Request,
     Header,
+)
+from fastapi.security import (
+    HTTPBearer,
+    HTTPAuthorizationCredentials,
 )
 from api.api_v1.short_urls.crud import storage
 from core.config import API_TOKENS
@@ -22,6 +27,12 @@ UNSAFE_METHODS = frozenset(
         "PATCH",
         "DELETE",
     }
+)
+
+static_api_token = HTTPBearer(
+    scheme_name="Static API Token",
+    description="Your **Static api token** from the developer portal. [Read more](#)",
+    auto_error=False,
 )
 
 
@@ -52,15 +63,21 @@ def save_storage_state(
 def api_token_required_for_unsafe_methods(
     request: Request,
     api_token: Annotated[
-        str,
-        Header(alias="x-auth-token"),
-    ] = "",
+        HTTPAuthorizationCredentials | None,
+        Depends(static_api_token),
+    ] = None,
 ) -> None:
+    log.info("API token: %s", api_token)
     if request.method not in UNSAFE_METHODS:
         return
 
-    if api_token not in API_TOKENS:
+    if not api_token:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="API token is required",
+        )
+    if api_token.credentials not in API_TOKENS:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid API token",
         )
