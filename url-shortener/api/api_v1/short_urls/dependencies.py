@@ -17,7 +17,6 @@ from starlette import status
 
 from core.config import (
     USERS_DB,
-    REDIS_TOKENS_SET_NAME,
 )
 from schemas.short_url import ShortUrl
 from .crud import storage
@@ -73,7 +72,9 @@ def save_storage_state(
 def validate_api_token(
     api_token: HTTPAuthorizationCredentials,
 ):
-    if redis_tokens.sismember(REDIS_TOKENS_SET_NAME, api_token.credentials):
+    if redis_tokens.token_exists(
+        api_token.credentials,
+    ):
         return
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
